@@ -13,11 +13,16 @@ dnf config-manager --set-enabled powertools 2>/dev/null \
 dnf install -y epel-release 2>/dev/null || true
 
 dnf install -y \
-  gcc gcc-c++ make cmake ninja-build git pkgconfig \
+  gcc-toolset-11 gcc-toolset-11-gcc-c++ \
+  make cmake ninja-build git pkgconfig \
   flex bison gperf dos2unix \
   python3.12 python3.12-pip \
   autoconf automake libtool zlib-devel \
   libX11-devel libxcb-devel libglvnd-devel mesa-libGL-devel
+
+# Qucs-S uses std::ranges (C++20); Rocky 8 default GCC 8.5 is too old.
+# shellcheck disable=SC1091
+source /opt/rh/gcc-toolset-11/enable
 
 # Rocky 8 base repos do not ship Qt 6 devel; use aqtinstall (needs Python 3.8+).
 # aqt only ships qtbase for 6.5.x (no qttools module); build LinguistTools separately.
@@ -55,11 +60,15 @@ export LD_LIBRARY_PATH="${QT_DIR}/lib:${LD_LIBRARY_PATH:-}"
 if [[ -n "${GITHUB_ENV:-}" ]]; then
   {
     echo "PATH=${PATH}"
+    echo "CC=${CC:-gcc}"
+    echo "CXX=${CXX:-g++}"
     echo "CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}"
     echo "LD_LIBRARY_PATH=${LD_LIBRARY_PATH}"
     echo "QT_DIR=${QT_DIR}"
   } >> "${GITHUB_ENV}"
 fi
+
+echo "GCC: $(gcc --version | head -1)"
 
 echo "Qt: $("${QT_DIR}/bin/qmake" -query QT_VERSION 2>/dev/null || echo "${QT_VERSION}")"
 echo "CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}"
