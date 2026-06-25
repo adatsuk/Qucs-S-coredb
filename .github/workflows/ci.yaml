@@ -60,7 +60,13 @@ jobs:
           cmake --build Qucs-S-coredb/build --target qucs-s translations -j"$(nproc)"
 
       - name: Install qucs-s payload
-        run: cmake --install Qucs-S-coredb/build
+        run: |
+          BUILD="Qucs-S-coredb/build"
+          # Install only qucs-s + CORE (skip satellite GUI tools not built in CI).
+          cmake --install "$BUILD/_deps/commondb-build"
+          cmake --install "$BUILD/qucs"
+          cmake --install "$BUILD/library"
+          cmake --install "$BUILD/translations"
 
       - name: Verify binary
         run: test -x Qucs-S-coredb/dist-install/bin/qucs-s
