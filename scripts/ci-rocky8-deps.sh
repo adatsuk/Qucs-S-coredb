@@ -15,14 +15,15 @@ dnf install -y epel-release 2>/dev/null || true
 dnf install -y \
   gcc gcc-c++ make cmake ninja-build git pkgconfig \
   flex bison gperf dos2unix \
-  python3 python3-pip \
+  python3.12 python3.12-pip \
   autoconf automake libtool zlib-devel \
   libX11-devel libxcb-devel libglvnd-devel mesa-libGL-devel
 
-# Rocky 8 base repos do not ship Qt 6 devel; use aqtinstall for a known-good toolchain.
+# Rocky 8 base repos do not ship Qt 6 devel; use aqtinstall (needs Python 3.8+).
 if [[ ! -x "${QT_DIR}/bin/qmake" ]]; then
-  pip3 install 'aqtinstall<4'
-  aqt install-qt linux desktop "${QT_VERSION}" gcc_64 \
+  python3.12 -m pip install --upgrade pip
+  python3.12 -m pip install 'aqtinstall<4'
+  python3.12 -m aqt install-qt linux desktop "${QT_VERSION}" gcc_64 \
     -O "${QT_INSTALL_ROOT}" -m qtsvg
 fi
 
