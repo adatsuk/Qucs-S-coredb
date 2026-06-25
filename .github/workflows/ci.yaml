@@ -51,16 +51,15 @@ jobs:
       - name: Configure and build qucs-s
         env:
           COMMONDB_ROOT: ${{ github.workspace }}/CommonDB
-          QUCS_ROOT: ${{ github.workspace }}/Qucs-S-coredb
         run: |
-          cmake -S "$QUCS_ROOT" -B "$QUCS_ROOT/build" -G Ninja \
+          cmake -S Qucs-S-coredb -B Qucs-S-coredb/build -G Ninja \
             -DCMAKE_BUILD_TYPE=Release \
             -DQUCS_CORE_SOURCE_DIR="$COMMONDB_ROOT" \
             -DCAPNP_ROOT="$COMMONDB_ROOT/third_party/capnp-install-linux"
-          cmake --build "$QUCS_ROOT/build" --target qucs-s -j"$(nproc)"
+          cmake --build Qucs-S-coredb/build --target qucs-s -j"$(nproc)"
 
       - name: Verify binary
-        run: test -x "${{ github.workspace }}/Qucs-S-coredb/build/qucs/qucs-s"
+        run: test -x Qucs-S-coredb/build/qucs/qucs-s
 
       - name: Upload qucs-s binary
         uses: actions/upload-artifact@v4

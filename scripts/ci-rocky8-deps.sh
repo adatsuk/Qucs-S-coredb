@@ -20,11 +20,12 @@ dnf install -y \
   libX11-devel libxcb-devel libglvnd-devel mesa-libGL-devel
 
 # Rocky 8 base repos do not ship Qt 6 devel; use aqtinstall (needs Python 3.8+).
+# Qt 6.5+ ships Svg in qtbase; qttools adds LinguistTools (lrelease).
 if [[ ! -x "${QT_DIR}/bin/qmake" ]]; then
   python3.12 -m pip install --upgrade pip
   python3.12 -m pip install 'aqtinstall<4'
   python3.12 -m aqt install-qt linux desktop "${QT_VERSION}" gcc_64 \
-    -O "${QT_INSTALL_ROOT}" -m qtsvg
+    -O "${QT_INSTALL_ROOT}" -m qttools
 fi
 
 export PATH="${QT_DIR}/bin:${PATH}"
