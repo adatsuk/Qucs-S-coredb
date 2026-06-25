@@ -20,6 +20,7 @@ dnf install -y \
   autoconf automake libtool zlib-devel \
   libX11-devel libxcb-devel libglvnd-devel mesa-libGL-devel \
   freetype-devel fontconfig-devel libxkbcommon-devel libxkbcommon-x11-devel \
+  xcb-util-cursor \
   curl patchelf
 
 # Qucs-S uses std::ranges (C++20); Rocky 8 default GCC 8.5 is too old.
