@@ -60,16 +60,20 @@ jobs:
           cmake --build Qucs-S-coredb/build --target qucs-s translations -j"$(nproc)"
 
       - name: Install qucs-s payload
+        env:
+          INSTALL_PREFIX: ${{ github.workspace }}/Qucs-S-coredb/dist-install
         run: |
           BUILD="Qucs-S-coredb/build"
           # Install only qucs-s + CORE (skip satellite GUI tools not built in CI).
-          cmake --install "$BUILD/_deps/commondb-build"
-          cmake --install "$BUILD/qucs"
-          cmake --install "$BUILD/library"
-          cmake --install "$BUILD/translations"
+          cmake --install "$BUILD/_deps/commondb-build" --prefix "$INSTALL_PREFIX"
+          cmake --install "$BUILD/qucs" --prefix "$INSTALL_PREFIX"
+          cmake --install "$BUILD/library" --prefix "$INSTALL_PREFIX"
+          cmake --install "$BUILD/translations" --prefix "$INSTALL_PREFIX"
+          install -d "$INSTALL_PREFIX/bin"
+          install -m 755 "$BUILD/qucs/qucs-s" "$INSTALL_PREFIX/bin/qucs-s"
 
       - name: Verify binary
-        run: test -x Qucs-S-coredb/dist-install/bin/qucs-s
+        run: test -x "${{ github.workspace }}/Qucs-S-coredb/dist-install/bin/qucs-s"
 
       - name: Install linuxdeployqt
         run: bash Qucs-S-coredb/scripts/ci_install_linuxdeployqt.sh
