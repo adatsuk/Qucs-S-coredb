@@ -20,12 +20,32 @@ dnf install -y \
   libX11-devel libxcb-devel libglvnd-devel mesa-libGL-devel
 
 # Rocky 8 base repos do not ship Qt 6 devel; use aqtinstall (needs Python 3.8+).
-# Qt 6.5+ ships Svg in qtbase; qttools adds LinguistTools (lrelease).
+# aqt only ships qtbase for 6.5.x (no qttools module); build LinguistTools separately.
 if [[ ! -x "${QT_DIR}/bin/qmake" ]]; then
   python3.12 -m pip install --upgrade pip
   python3.12 -m pip install 'aqtinstall<4'
   python3.12 -m aqt install-qt linux desktop "${QT_VERSION}" gcc_64 \
-    -O "${QT_INSTALL_ROOT}" -m qttools
+    -O "${QT_INSTALL_ROOT}"
+fi
+
+if [[ ! -x "${QT_DIR}/bin/lrelease" ]]; then
+  QTTOOLS_SRC="${QTTOOLS_SRC:-/tmp/qttools-${QT_VERSION}}"
+  if [[ ! -d "${QTTOOLS_SRC}/.git" ]]; then
+    git clone --depth 1 --branch "v${QT_VERSION}" \
+      https://code.qt.io/qt/qttools.git "${QTTOOLS_SRC}"
+  fi
+  cmake -S "${QTTOOLS_SRC}" -B "${QTTOOLS_SRC}/build" -G Ninja \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DCMAKE_PREFIX_PATH="${QT_DIR}" \
+    -DCMAKE_INSTALL_PREFIX="${QT_DIR}" \
+    -DFEATURE_assistant=OFF \
+    -DFEATURE_designer=OFF \
+    -DFEATURE_linguist=ON \
+    -DFEATURE_qdoc=OFF \
+    -DFEATURE_qtattributionsscanner=OFF \
+    -DFEATURE_pixeltool=OFF \
+    -DFEATURE_distancefieldgenerator=OFF
+  cmake --build "${QTTOOLS_SRC}/build" --target install -j"$(nproc)"
 fi
 
 export PATH="${QT_DIR}/bin:${PATH}"
