@@ -47,6 +47,7 @@ qrc_*.cpp
 *~
 *.dpl
 *.dat
+!qucs/python/rc_ac_sweep.dat
 *.dat.ngspice
 *.dat.xyce
 *.dat.spopus
