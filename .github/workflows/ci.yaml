@@ -54,15 +54,33 @@ jobs:
         run: |
           cmake -S Qucs-S-coredb -B Qucs-S-coredb/build -G Ninja \
             -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_INSTALL_PREFIX="${{ github.workspace }}/Qucs-S-coredb/dist-install" \
             -DQUCS_CORE_SOURCE_DIR="$COMMONDB_ROOT" \
             -DCAPNP_ROOT="$COMMONDB_ROOT/third_party/capnp-install-linux"
-          cmake --build Qucs-S-coredb/build --target qucs-s -j"$(nproc)"
+          cmake --build Qucs-S-coredb/build --target qucs-s translations -j"$(nproc)"
+
+      - name: Install qucs-s payload
+        run: cmake --install Qucs-S-coredb/build
 
       - name: Verify binary
-        run: test -x Qucs-S-coredb/build/qucs/qucs-s
+        run: test -x Qucs-S-coredb/dist-install/bin/qucs-s
 
-      - name: Upload qucs-s binary
+      - name: Install linuxdeployqt
+        run: bash Qucs-S-coredb/scripts/ci_install_linuxdeployqt.sh
+
+      - name: Package portable bundle
+        env:
+          QT_DIR: /opt/qt/6.5.3/gcc_64
+          CAPNP_ROOT: ${{ github.workspace }}/CommonDB/third_party/capnp-install-linux
+        run: |
+          sed -i 's/\r$//' Qucs-S-coredb/scripts/package_qucs_linux_bundle.sh
+          bash Qucs-S-coredb/scripts/package_qucs_linux_bundle.sh \
+            Qucs-S-coredb/dist-install \
+            Qucs-S-coredb/qucs-s-rocky8-bundle.tar.gz \
+            "Rocky Linux 8"
+
+      - name: Upload qucs-s bundle
         uses: actions/upload-artifact@v4
         with:
           name: qucs-s-rocky8
-          path: Qucs-S-coredb/build/qucs/qucs-s
+          path: Qucs-S-coredb/qucs-s-rocky8-bundle.tar.gz

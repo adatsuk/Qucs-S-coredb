@@ -19,7 +19,8 @@ dnf install -y \
   python3.12 python3.12-pip \
   autoconf automake libtool zlib-devel \
   libX11-devel libxcb-devel libglvnd-devel mesa-libGL-devel \
-  freetype-devel fontconfig-devel libxkbcommon-devel libxkbcommon-x11-devel
+  freetype-devel fontconfig-devel libxkbcommon-devel libxkbcommon-x11-devel \
+  curl patchelf
 
 # Qucs-S uses std::ranges (C++20); Rocky 8 default GCC 8.5 is too old.
 # shellcheck disable=SC1091
