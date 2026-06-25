@@ -42,7 +42,11 @@ if command -v patchelf >/dev/null 2>&1; then
 fi
 
 if command -v linuxdeployqt >/dev/null 2>&1; then
-    linuxdeployqt "$STAGE/qucs-s" -bundle-non-qt-libs -always-overwrite
+    linuxdeployqt "$STAGE/qucs-s" \
+      -bundle-non-qt-libs -always-overwrite -no-translations \
+      -no-plugins \
+      -extra-plugins=platforms,imageformats,iconengines,styles \
+      -qmake="${QT_DIR}/bin/qmake"
 else
     echo "WARNING: linuxdeployqt not found; copying Qt libs via ldd."
     mkdir -p "$STAGE/lib"
