@@ -39,9 +39,8 @@ jobs:
             capnp-linux-rocky8-v1-
 
       - name: Bootstrap Cap'n Proto
-        env:
-          COMMONDB_ROOT: ${{ github.workspace }}/CommonDB
         run: |
+          COMMONDB_ROOT="$GITHUB_WORKSPACE/CommonDB"
           sed -i 's/\r$//' "$COMMONDB_ROOT/scripts/build_capnp_linux.sh"
           CAPNP_SKIP_CHECK=1 bash "$COMMONDB_ROOT/scripts/build_capnp_linux.sh" \
             "https://github.com/capnproto/capnproto.git" branch master "" "" \
@@ -49,31 +48,27 @@ jobs:
             "$COMMONDB_ROOT/third_party/capnp-install-linux"
 
       - name: Configure and build qucs-s
-        env:
-          COMMONDB_ROOT: ${{ github.workspace }}/CommonDB
         run: |
+          COMMONDB_ROOT="$GITHUB_WORKSPACE/CommonDB"
           cmake -S Qucs-S-coredb -B Qucs-S-coredb/build -G Ninja \
             -DCMAKE_BUILD_TYPE=Release \
-            -DCMAKE_INSTALL_PREFIX="${{ github.workspace }}/Qucs-S-coredb/dist-install" \
+            -DCMAKE_INSTALL_PREFIX="$GITHUB_WORKSPACE/Qucs-S-coredb/dist-install" \
             -DQUCS_CORE_SOURCE_DIR="$COMMONDB_ROOT" \
             -DCAPNP_ROOT="$COMMONDB_ROOT/third_party/capnp-install-linux"
           cmake --build Qucs-S-coredb/build --target qucs-s translations -j"$(nproc)"
 
       - name: Install qucs-s payload
-        env:
-          INSTALL_PREFIX: ${{ github.workspace }}/Qucs-S-coredb/dist-install
         run: |
           BUILD="Qucs-S-coredb/build"
+          PREFIX="$GITHUB_WORKSPACE/Qucs-S-coredb/dist-install"
           # Install only qucs-s + CORE (skip satellite GUI tools not built in CI).
-          cmake --install "$BUILD/_deps/commondb-build" --prefix "$INSTALL_PREFIX"
-          cmake --install "$BUILD/qucs" --prefix "$INSTALL_PREFIX"
-          cmake --install "$BUILD/library" --prefix "$INSTALL_PREFIX"
-          cmake --install "$BUILD/translations" --prefix "$INSTALL_PREFIX"
-          install -d "$INSTALL_PREFIX/bin"
-          install -m 755 "$BUILD/qucs/qucs-s" "$INSTALL_PREFIX/bin/qucs-s"
+          cmake --install "$BUILD/_deps/commondb-build" --prefix "$PREFIX"
+          cmake --install "$BUILD/qucs" --prefix "$PREFIX"
+          cmake --install "$BUILD/library" --prefix "$PREFIX"
+          cmake --install "$BUILD/translations" --prefix "$PREFIX"
 
       - name: Verify binary
-        run: test -x "${{ github.workspace }}/Qucs-S-coredb/dist-install/bin/qucs-s"
+        run: test -x "$GITHUB_WORKSPACE/Qucs-S-coredb/dist-install/bin/qucs-s"
 
       - name: Install linuxdeployqt
         run: bash Qucs-S-coredb/scripts/ci_install_linuxdeployqt.sh
@@ -81,8 +76,8 @@ jobs:
       - name: Package portable bundle
         env:
           QT_DIR: /opt/qt/6.5.3/gcc_64
-          CAPNP_ROOT: ${{ github.workspace }}/CommonDB/third_party/capnp-install-linux
         run: |
+          export CAPNP_ROOT="$GITHUB_WORKSPACE/CommonDB/third_party/capnp-install-linux"
           sed -i 's/\r$//' Qucs-S-coredb/scripts/package_qucs_linux_bundle.sh
           bash Qucs-S-coredb/scripts/package_qucs_linux_bundle.sh \
             Qucs-S-coredb/dist-install \
